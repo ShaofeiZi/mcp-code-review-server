@@ -6,28 +6,29 @@
  */
 
 // Export types
-export * from './types';
+export * from './types.js';
 
 // Export configuration
-export * from './config';
+export * from './config.js';
 
 // Export services
-export * from './service';
-export * from './codeReviewService';
+export * from './service.js';
+export * from './codeReviewService.js';
 
-// Export utilities
-export * from './prompt';
-export * from './processor';
-export * from './errors';
+// Export helpers
+export * from './prompt.js';
+export * from './processor.js';
+export * from './errors.js';
 
-// Re-export common components
-import { loadLLMConfig } from './config';
-import { CodeReviewService } from './codeReviewService';
-import { CodeReviewOptions, CodeReviewResult } from './types';
+// Re-export the code review service creator
+import { loadLLMConfig } from './config.js';
+import { CodeReviewService } from './codeReviewService.js';
+import { CodeReviewOptions, CodeReviewResult } from './types.js';
+
+export { CodeReviewOptions, CodeReviewResult };
 
 /**
- * Creates a code review service with the specified configuration
- * @returns A configured code review service
+ * Creates a new code review service with the default configuration
  */
 export function createCodeReviewService(): CodeReviewService {
   const config = loadLLMConfig();

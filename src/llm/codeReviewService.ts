@@ -2,24 +2,26 @@
  * @file Code Review Service
  * @version 0.1.0
  * 
- * Integrates components to provide code review functionality
+ * Service for performing code reviews using LLMs
  */
 
-import { LLMConfig, CodeReviewOptions, CodeReviewResult } from './types';
-import { LLMService } from './service';
-import { CodeReviewPromptBuilder } from './prompt';
-import { CodeProcessor } from './processor';
+import * as fs from 'fs';
+import { LLMConfig, CodeReviewOptions, CodeReviewResult } from './types.js';
+import { LLMService } from './service.js';
+import { CodeReviewPromptBuilder } from './prompt.js';
+import { CodeProcessor } from './processor.js';
+import { callWithRetry } from './errors.js';
 
 /**
- * Provides code review functionality
+ * Service for performing code reviews
  */
 export class CodeReviewService {
   private llmService: LLMService;
   private promptBuilder: CodeReviewPromptBuilder;
   private codeProcessor: CodeProcessor;
-
+  
   /**
-   * Initializes a new code review service
+   * Creates a new CodeReviewService
    * @param config LLM configuration
    */
   constructor(config: LLMConfig) {
@@ -27,53 +29,56 @@ export class CodeReviewService {
     this.promptBuilder = new CodeReviewPromptBuilder();
     this.codeProcessor = new CodeProcessor();
   }
-
+  
   /**
-   * Reviews code using the configured LLM
-   * @param repomixOutputPath Path to the Repomix output file
+   * Reviews code from a file
+   * @param filePath Path to the file to review
    * @param options Code review options
-   * @returns The code review result
+   * @returns Code review result
    */
-  async reviewCodeFromRepomix(repomixOutputPath: string, options: CodeReviewOptions): Promise<CodeReviewResult> {
-    try {
-      // Process the Repomix output
-      const processedCode = this.codeProcessor.processRepomixOutput(repomixOutputPath);
-      
-      // Handle large codebases by chunking if necessary
-      const codeChunks = this.codeProcessor.chunkLargeCodebase(processedCode);
-      
-      // For now, we'll just use the first chunk
-      // In a more sophisticated implementation, we'd process each chunk and merge results
-      if (codeChunks.length > 1) {
-        console.warn(`Code was split into ${codeChunks.length} chunks. Only reviewing the first chunk.`);
-      }
-      
-      return await this.reviewCode(codeChunks[0], options);
-    } catch (error) {
-      console.error('Error in code review process:', error);
-      throw error;
-    }
+  async reviewCodeFromFile(filePath: string, options: CodeReviewOptions): Promise<CodeReviewResult> {
+    console.log(`Reviewing code from file: ${filePath}`);
+    const code = fs.readFileSync(filePath, 'utf-8');
+    return this.reviewCode(code, options);
   }
   
   /**
-   * Reviews code content directly
-   * @param code The code content to review
+   * Reviews code from repomix output
+   * @param repomixOutput Repomix output or path to Repomix output file
    * @param options Code review options
-   * @returns The code review result
+   * @returns Code review result
    */
-  async reviewCode(code: string, options: CodeReviewOptions): Promise<CodeReviewResult> {
+  async reviewCodeFromRepomix(repomixOutput: string, options: CodeReviewOptions): Promise<CodeReviewResult> {
+    console.log('Processing Repomix output...');
+    const processedRepo = await this.codeProcessor.processRepomixOutput(repomixOutput);
+    console.log(`Processed Repomix output (${processedRepo.length} characters)`);
+    return this.reviewCode(processedRepo, options);
+  }
+  
+  /**
+   * Reviews code
+   * @param code Code to review
+   * @param options Code review options
+   * @returns Code review result
+   */
+  private async reviewCode(code: string, options: CodeReviewOptions): Promise<CodeReviewResult> {
     try {
-      // Build the prompt
-      const prompt = this.promptBuilder.buildPrompt(code, options);
+      console.log('Building code review prompt...');
+      const prompt = this.promptBuilder.buildCodeReviewPrompt(code, options);
       
-      // Generate the review
-      const rawResult = await this.llmService.generateReview(code, prompt);
+      console.log('Sending code to LLM for review...');
+      // Use retry logic for robustness
+      const result = await callWithRetry(
+        () => this.llmService.generateReview(prompt),
+        3,  // max retries
+        2000 // initial delay
+      );
       
-      // Parse the result
-      return this.llmService.parseReviewResult(rawResult);
+      console.log('Review completed successfully');
+      return result;
     } catch (error) {
       console.error('Error reviewing code:', error);
-      throw new Error(`Failed to review code: ${error.message}`);
+      throw new Error(`Failed to review code: ${(error as Error).message}`);
     }
   }
 } 

@@ -16,27 +16,29 @@
  * - Request handling
  */
 
-import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { executeRepomix, RepomixOptions } from './repomix.js';
 import * as fs from 'fs';
-import { createCodeReviewService, CodeReviewOptions } from './llm/index.js';
+import { createCodeReviewService, CodeReviewOptions, CodeReviewResult } from './llm/index.js';
+import { z } from 'zod';
 
 // Create and configure the server
-const server = new Server({
+const server = new McpServer({
   name: 'code-review-server',
+  version: '0.1.0',
   description: 'A custom MCP server to perform code reviews'
 });
 
 // Register the analyze_repo tool
-server.registerTool({
-  name: 'analyze_repo',
-  description: 'Analyzes a repository using Repomix',
-  parameters: {
-    repoPath: { type: 'string', description: 'Path to the repository to analyze' },
-    specificFiles: { type: 'array', items: { type: 'string' }, optional: true },
-    fileTypes: { type: 'array', items: { type: 'string' }, optional: true }
-  },
-  handler: async (params) => {
+server.tool(
+  'analyze_repo',
+  {
+    repoPath: z.string().describe('Path to the repository to analyze'),
+    specificFiles: z.array(z.string()).optional().describe('Specific files to analyze'),
+    fileTypes: z.array(z.string()).optional().describe('File types to include in the analysis')
+  }, 
+  async (params) => {
     const options: RepomixOptions = {
       includePaths: params.specificFiles,
       fileTypes: params.fileTypes,
@@ -44,48 +46,21 @@ server.registerTool({
     };
     
     const result = await executeRepomix(options);
-    return { content: [{ text: `Analyzing repository: ${result}` }] };
+    return { content: [{ type: 'text', text: `Analyzing repository: ${result}` }] };
   }
-});
+);
 
 // Register the code_review tool
-server.registerTool({
-  name: 'code_review',
-  description: 'Performs a code review on a repository using an LLM',
-  parameters: {
-    repoPath: { 
-      type: 'string', 
-      description: 'Path to the repository to analyze' 
-    },
-    specificFiles: { 
-      type: 'array', 
-      items: { type: 'string' }, 
-      optional: true,
-      description: 'Specific files to review (if empty, will review the entire codebase)'
-    },
-    fileTypes: { 
-      type: 'array', 
-      items: { type: 'string' }, 
-      optional: true,
-      description: 'File types to include in the review (e.g., [".js", ".ts"])'
-    },
-    detailLevel: {
-      type: 'string',
-      enum: ['basic', 'detailed'],
-      optional: true,
-      description: 'Level of detail for the code review'
-    },
-    focusAreas: {
-      type: 'array',
-      items: { 
-        type: 'string',
-        enum: ['security', 'performance', 'quality', 'maintainability']
-      },
-      optional: true,
-      description: 'Areas to focus on during the code review'
-    }
+server.tool(
+  'code_review',
+  {
+    repoPath: z.string().describe('Path to the repository to analyze'),
+    specificFiles: z.array(z.string()).optional().describe('Specific files to review'),
+    fileTypes: z.array(z.string()).optional().describe('File types to include in the review'),
+    detailLevel: z.enum(['basic', 'detailed']).optional().describe('Level of detail for the code review'),
+    focusAreas: z.array(z.enum(['security', 'performance', 'quality', 'maintainability'])).optional().describe('Areas to focus on during the code review')
   },
-  handler: async (params) => {
+  async (params) => {
     try {
       // Execute Repomix to get the flattened codebase
       const repomixOptions: RepomixOptions = {
@@ -98,9 +73,8 @@ server.registerTool({
       
       // Set up review options
       const reviewOptions: CodeReviewOptions = {
-        detailLevel: (params.detailLevel as 'basic' | 'detailed') || 'detailed',
-        focusAreas: (params.focusAreas as ('security' | 'performance' | 'quality' | 'maintainability')[]) || 
-          ['security', 'performance', 'quality', 'maintainability'],
+        detailLevel: params.detailLevel || 'detailed',
+        focusAreas: params.focusAreas || ['security', 'performance', 'quality', 'maintainability'],
       };
       
       // Create the code review service
@@ -114,6 +88,7 @@ server.registerTool({
         return {
           content: [
             { 
+              type: 'text',
               text: JSON.stringify(reviewResult, null, 2) 
             }
           ]
@@ -123,9 +98,11 @@ server.registerTool({
         return {
           content: [
             { 
-              text: `Error initializing code review service: ${error.message}. Make sure you have set the necessary environment variables (LLM_PROVIDER and the corresponding API key).`
+              type: 'text',
+              text: `Error initializing code review service: ${(error as Error).message}. Make sure you have set the necessary environment variables (LLM_PROVIDER and the corresponding API key).`
             }
-          ]
+          ],
+          isError: true
         };
       }
     } catch (error) {
@@ -133,13 +110,19 @@ server.registerTool({
       return {
         content: [
           { 
-            text: `Error performing code review: ${error.message}` 
+            type: 'text',
+            text: `Error performing code review: ${(error as Error).message}`
           }
-        ]
+        ],
+        isError: true
       };
     }
   }
-});
+);
 
 // Start the server
-server.start();
+const transport = new StdioServerTransport();
+server.connect(transport).catch(error => {
+  console.error('Failed to start server:', error);
+  process.exit(1);
+});

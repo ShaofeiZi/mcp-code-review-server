@@ -2,72 +2,95 @@
  * @file Code Review Prompt Builder
  * @version 0.1.0
  * 
- * Builds prompts for code review LLM requests
+ * Builds prompts for code review
  */
 
-import { CodeReviewOptions } from './types';
+import { CodeReviewOptions } from './types.js';
 
 /**
- * Builds prompts for code reviews
+ * Builds prompts for code review
  */
 export class CodeReviewPromptBuilder {
   /**
-   * Builds a code review prompt
-   * @param code The code to review
-   * @param options The review options
-   * @returns The formatted prompt
+   * Creates a code review prompt builder
    */
-  buildPrompt(code: string, options: CodeReviewOptions): string {
-    // Create focus areas string
+  constructor() {}
+  
+  /**
+   * Builds a code review prompt
+   * @param code Code to review
+   * @param options Code review options
+   * @returns Prompt text
+   */
+  buildCodeReviewPrompt(code: string, options: CodeReviewOptions): string {
     const focusAreasText = options.focusAreas
-      .map(area => {
+      .map((area: string) => {
         switch (area) {
-          case 'security': return 'Security vulnerabilities and best practices';
-          case 'performance': return 'Performance issues and optimizations';
-          case 'quality': return 'Code quality, readability, and maintainability';
-          case 'maintainability': return 'Architectural concerns and long-term maintainability';
-          default: return area;
+          case 'security':
+            return '- Security: Look for vulnerabilities (XSS, CSRF, injection attacks), authentication/authorization issues, sensitive data exposure, insecure dependencies, and unsafe operations';
+          case 'performance':
+            return '- Performance: Identify inefficient algorithms, excessive resource usage, memory leaks, unnecessary computations, unoptimized database queries, and scaling concerns';
+          case 'quality':
+            return '- Quality: Analyze code clarity, naming conventions, adherence to design patterns, separation of concerns, code duplication, excessive complexity, and testability';
+          case 'maintainability':
+            return '- Maintainability: Assess documentation quality, test coverage, modularity, extensibility, configuration management, dependency management, and architectural coherence';
+          default:
+            return '';
         }
       })
-      .join('\n- ');
+      .filter(text => text.length > 0)
+      .join('\n');
     
-    // Detail level instructions
-    const detailLevelText = options.detailLevel === 'detailed'
-      ? 'Provide detailed analysis and thorough recommendations.'
-      : 'Focus on critical issues and provide concise recommendations.';
+    const detailLevelText = options.detailLevel === 'detailed' 
+      ? 'Provide a comprehensive, in-depth review with specific line references and detailed explanations'
+      : 'Provide a high-level overview of key findings and most critical issues';
     
-    // Build the prompt
     return `
-You are an expert code reviewer with deep knowledge of software development best practices, design patterns, and security.
+You are an expert code reviewer with deep knowledge of programming best practices, security, and performance optimization.
 
-Please perform a ${options.detailLevel} code review on the following code and provide structured feedback:
+TASK:
+Review the provided code and deliver a structured analysis following these guidelines.
 
-\`\`\`
-${code}
-\`\`\`
+FOCUS AREAS:
+${focusAreasText}
 
+DETAIL LEVEL:
 ${detailLevelText}
 
-Focus on these areas:
-- ${focusAreasText}
+ANALYSIS APPROACH:
+1. First pass: Get a high-level understanding of the code structure and purpose
+2. Second pass: Identify potential issues based on the focus areas
+3. Third pass: Evaluate implementation quality and identify strengths
+4. Final pass: Formulate specific, actionable recommendations
 
-Provide your response in the following structured JSON format:
+RESPONSE FORMAT:
+Your response must be valid JSON with the following structure:
+
 {
-  "summary": "Brief summary of the code and its purpose",
+  "summary": "Brief summary of the code purpose and overall assessment",
   "issues": [
     {
       "type": "SECURITY|PERFORMANCE|QUALITY|MAINTAINABILITY",
       "severity": "HIGH|MEDIUM|LOW",
-      "description": "Description of the issue",
-      "line_numbers": [12, 15], // Line numbers if applicable
-      "recommendation": "Recommended fix"
+      "description": "Clear description of the specific issue",
+      "line_numbers": [12, 15],
+      "recommendation": "Detailed, actionable suggestion to fix the issue"
     }
   ],
-  "strengths": ["List of code strengths"],
-  "recommendations": ["List of overall recommendations"]
+  "strengths": ["Description of code strengths and good practices identified"],
+  "recommendations": ["Overall recommendations for improving the code"]
 }
 
-Do not include any text outside of the JSON structure. The response must be valid JSON.
+IMPORTANT:
+- Be specific in your analysis
+- Provide concrete examples when possible
+- Include specific line numbers for issues when applicable
+- Ensure recommendations are clear and actionable
+- Maintain a balanced perspective, highlighting both issues and strengths
+- Your response MUST be valid JSON
+
+CODE TO REVIEW:
+${code}
 `;
   }
 } 

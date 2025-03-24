@@ -2,7 +2,7 @@
  * @file Code Processor
  * @version 0.1.0
  * 
- * Processes and formats code for LLM analysis
+ * Processes code for review
  */
 
 import * as fs from 'fs';
@@ -24,122 +24,133 @@ export interface ProcessedFile {
 }
 
 /**
- * Processes code for LLM analysis
+ * Processes code for LLM review
  */
 export class CodeProcessor {
   /**
-   * Maximum size in characters for a code chunk
+   * Maximum characters per chunk to send to LLM
    */
-  private maxChunkSize: number;
+  private readonly MAX_CHARS_PER_CHUNK = 100000;
   
   /**
-   * Constructor
-   * @param maxChunkSize Maximum size in characters for a code chunk
+   * Processes Repomix output for review
+   * @param repomixOutput Repomix output or path to output file
+   * @returns Processed code
    */
-  constructor(maxChunkSize: number = 50000) {
-    this.maxChunkSize = maxChunkSize;
-  }
-
-  /**
-   * Processes Repomix output file
-   * @param outputPath Path to the Repomix output file
-   * @returns The processed code content
-   */
-  processRepomixOutput(outputPath: string): string {
+  async processRepomixOutput(repomixOutput: string): Promise<string> {
     try {
-      // Check if file exists
-      if (!fs.existsSync(outputPath)) {
-        throw new Error(`Repomix output file not found at path: ${outputPath}`);
+      let content = repomixOutput;
+      
+      // If the output is a file path, read it
+      if (repomixOutput.trim().endsWith('.txt') && fs.existsSync(repomixOutput.trim())) {
+        console.log(`Reading Repomix output from file: ${repomixOutput}`);
+        content = fs.readFileSync(repomixOutput.trim(), 'utf-8');
+      } else {
+        console.log('Processing Repomix output from string');
       }
       
-      // Read the file
-      const content = fs.readFileSync(outputPath, 'utf-8');
+      // Process the output
+      const processedOutput = this.formatRepomixOutput(content);
       
-      // Basic validation
-      if (!content || content.trim().length === 0) {
-        throw new Error('Repomix output file is empty');
+      // Check if we need to chunk the content due to size
+      if (processedOutput.length > this.MAX_CHARS_PER_CHUNK) {
+        console.warn(`Repomix output exceeds maximum size (${this.MAX_CHARS_PER_CHUNK} chars). Chunking content...`);
+        const chunks = this.chunkLargeCodebase(processedOutput);
+        console.log(`Split content into ${chunks.length} chunks. Using first chunk.`);
+        return chunks[0];
       }
       
-      console.log(`Successfully processed Repomix output: ${outputPath}`);
-      
-      return this.formatCodeForLLM(content);
+      return processedOutput;
     } catch (error) {
       console.error('Error processing Repomix output:', error);
-      throw new Error(`Failed to process Repomix output: ${error.message}`);
+      throw new Error(`Failed to process Repomix output: ${(error as Error).message}`);
     }
   }
   
   /**
-   * Formats code for optimal LLM processing
-   * @param code The raw code content
-   * @returns The formatted code
-   */
-  private formatCodeForLLM(code: string): string {
-    // For now, just return the code as is if it's under the max chunk size
-    if (code.length <= this.maxChunkSize) {
-      return code;
-    }
-    
-    // Otherwise, truncate with a warning
-    console.warn(`Code exceeds maximum chunk size (${this.maxChunkSize} characters). Truncating...`);
-    return code.substring(0, this.maxChunkSize) + 
-      `\n\n/* NOTE: Code was truncated because it exceeds the ${this.maxChunkSize} character limit */`;
-  }
-  
-  /**
-   * Chunks a large codebase into smaller pieces
-   * (This is a placeholder for future implementation)
-   * @param code The full code content
-   * @returns An array of code chunks
+   * Splits large codebases into manageable chunks
+   * @param code Code to chunk
+   * @returns Array of code chunks
    */
   chunkLargeCodebase(code: string): string[] {
-    // This is a simple implementation - could be improved with more sophisticated chunking
-    const chunks: string[] = [];
-    
-    // If code is small enough, return as single chunk
-    if (code.length <= this.maxChunkSize) {
+    if (!code || code.length <= this.MAX_CHARS_PER_CHUNK) {
       return [code];
     }
     
-    // Split by file markers (this assumes Repomix format with file headers)
-    const fileMarkerRegex = /^\/\/ FILE: .*$/gm;
-    let lastIndex = 0;
-    let currentChunk = '';
+    const chunks: string[] = [];
+    let currentIndex = 0;
     
-    const matches = code.matchAll(fileMarkerRegex);
-    for (const match of matches) {
-      if (match.index === undefined) continue;
+    while (currentIndex < code.length) {
+      // Find a good break point (end of a file or section)
+      let endIndex = currentIndex + this.MAX_CHARS_PER_CHUNK;
       
-      // Add the previous file to the current chunk if it fits
-      const previousFile = code.substring(lastIndex, match.index);
-      if (currentChunk.length + previousFile.length <= this.maxChunkSize) {
-        currentChunk += previousFile;
+      if (endIndex >= code.length) {
+        endIndex = code.length;
       } else {
-        // If it doesn't fit, start a new chunk
-        if (currentChunk.length > 0) {
-          chunks.push(currentChunk);
+        // Try to find a file boundary to split at
+        const nextFileBoundary = code.indexOf('================', endIndex);
+        if (nextFileBoundary !== -1 && nextFileBoundary - endIndex < this.MAX_CHARS_PER_CHUNK * 0.2) {
+          // If the next file boundary is within 20% of the max chunk size, use it
+          endIndex = nextFileBoundary;
+        } else {
+          // Otherwise, find the last newline before the max size
+          const lastNewline = code.lastIndexOf('\n', endIndex);
+          if (lastNewline !== -1 && lastNewline > currentIndex) {
+            endIndex = lastNewline;
+          }
         }
-        currentChunk = previousFile;
       }
       
-      lastIndex = match.index;
-    }
-    
-    // Add the final chunk
-    if (currentChunk.length > 0) {
-      chunks.push(currentChunk);
-    }
-    
-    // Add any remaining text
-    if (lastIndex < code.length) {
-      const remainingText = code.substring(lastIndex);
-      if (chunks.length > 0 && chunks[chunks.length - 1].length + remainingText.length <= this.maxChunkSize) {
-        chunks[chunks.length - 1] += remainingText;
-      } else {
-        chunks.push(remainingText);
-      }
+      // Add the chunk
+      chunks.push(code.substring(currentIndex, endIndex));
+      currentIndex = endIndex;
     }
     
     return chunks;
+  }
+  
+  /**
+   * Formats Repomix output for LLM consumption
+   * @param repomixOutput Repomix output to format
+   * @returns Formatted output
+   */
+  private formatRepomixOutput(repomixOutput: string): string {
+    // Extract the most relevant parts of the Repomix output
+    let formatted = repomixOutput;
+    
+    // Remove any ASCII art or unnecessarily long headers
+    formatted = formatted.replace(/^\s*[-=*]{10,}\s*$/gm, '================');
+    
+    // Ensure file headers are prominent
+    formatted = formatted.replace(/^File: (.+)$/gm, '================\nFile: $1\n================');
+    
+    // Add line numbers to help with references
+    const lines = formatted.split('\n');
+    let currentFile = '';
+    let lineCounter = 0;
+    let result = [];
+    
+    for (const line of lines) {
+      // Check if this is a file header
+      if (line.startsWith('File: ')) {
+        currentFile = line.replace('File: ', '').trim();
+        lineCounter = 0;
+        result.push(line);
+      } 
+      // Check if this is a file boundary
+      else if (line === '================') {
+        lineCounter = 0;
+        result.push(line);
+      } 
+      // Normal code line
+      else {
+        if (currentFile && !line.startsWith('================')) {
+          lineCounter++;
+        }
+        result.push(line);
+      }
+    }
+    
+    return result.join('\n');
   }
 } 

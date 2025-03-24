@@ -91,18 +91,47 @@ npm run inspector
 
 ## LLM Integration
 
-The code review server supports the following LLM providers:
+The code review server integrates directly with multiple LLM provider APIs:
 
-- OpenAI (gpt-4o)
-- Anthropic (claude-3-opus-20240229)
-- Gemini (gemini-1.5-pro)
+- **OpenAI** (default: gpt-4o)
+- **Anthropic** (default: claude-3-opus-20240307)
+- **Gemini** (default: gemini-1.5-pro)
 
-You can specify the provider and model in the environment variables:
+### Provider Configuration
 
+Configure your preferred LLM provider in the `.env` file:
+
+```bash
+# Set which provider to use
+LLM_PROVIDER=OPEN_AI  # Options: OPEN_AI, ANTHROPIC, or GEMINI
+
+# Provider API Keys (add your key for the chosen provider)
+OPENAI_API_KEY=your-openai-api-key
+ANTHROPIC_API_KEY=your-anthropic-api-key
+GEMINI_API_KEY=your-gemini-api-key
 ```
-LLM_PROVIDER=OPEN_AI            # OPEN_AI, ANTHROPIC, or GEMINI
-OPENAI_MODEL=gpt-4o             # Optional: specify a different model
+
+### Model Configuration
+
+You can optionally specify which model to use for each provider:
+
+```bash
+# Optional: Override the default models
+OPENAI_MODEL=gpt-4-turbo
+ANTHROPIC_MODEL=claude-3-sonnet-20240229
+GEMINI_MODEL=gemini-1.5-flash-preview
 ```
+
+### How the LLM Integration Works
+
+1. The `code_review` tool processes code using Repomix to flatten the repository structure
+2. The code is formatted and chunked if necessary to fit within LLM context limits
+3. A detailed prompt is generated based on the focus areas and detail level
+4. The prompt and code are sent directly to the LLM API of your chosen provider
+5. The LLM response is parsed into a structured format
+6. The review is returned as a JSON object with issues, strengths, and recommendations
+
+The implementation includes retry logic for resilience against API errors and proper formatting to ensure the most relevant code is included in the review.
 
 ## Code Review Output Format
 

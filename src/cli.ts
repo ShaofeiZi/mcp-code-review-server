@@ -9,6 +9,7 @@
 import * as path from 'path';
 import { executeRepomix } from './repomix.js';
 import { createCodeReviewService } from './llm/index.js';
+import { CodeReviewIssue, CodeReviewResult } from './llm/types.js';
 
 // Load environment variables
 import * as dotenv from 'dotenv';
@@ -110,7 +111,7 @@ Options:
     if (reviewResult.issues.length === 0) {
       console.log('  No issues found');
     } else {
-      reviewResult.issues.forEach((issue, index) => {
+      reviewResult.issues.forEach((issue: CodeReviewIssue, index: number) => {
         console.log(`  ${index + 1}. [${issue.severity}] ${issue.type}: ${issue.description}`);
         if (issue.line_numbers && issue.line_numbers.length > 0) {
           console.log(`     Lines: ${issue.line_numbers.join(', ')}`);
@@ -121,17 +122,17 @@ Options:
     }
     
     console.log('\nStrengths:');
-    reviewResult.strengths.forEach((strength, index) => {
+    reviewResult.strengths.forEach((strength: string, index: number) => {
       console.log(`  ${index + 1}. ${strength}`);
     });
     
     console.log('\nRecommendations:');
-    reviewResult.recommendations.forEach((recommendation, index) => {
+    reviewResult.recommendations.forEach((recommendation: string, index: number) => {
       console.log(`  ${index + 1}. ${recommendation}`);
     });
     
   } catch (error) {
-    console.error('Error:', error.message);
+    console.error('Error:', (error as Error).message);
     process.exit(1);
   }
 }
