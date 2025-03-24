@@ -56,6 +56,45 @@ The server exposes two main tools:
 1. `analyze_repo`: Flattens a codebase using Repomix
 2. `code_review`: Performs a code review using an LLM
 
+## When to Use MCP Tools
+
+This server provides two distinct tools for different code analysis needs:
+
+### analyze_repo
+
+**Use this tool when you need to:**
+- Get a high-level overview of a codebase's structure and organization
+- Flatten a repository into a textual representation for initial analysis
+- Understand the directory structure and file contents without detailed review
+- Prepare for a more in-depth code review
+- Quickly scan a codebase to identify relevant files for further analysis
+
+**Example situations:**
+- "I want to understand the structure of this repository before reviewing it"
+- "Show me what files and directories are in this codebase"
+- "Give me a flattened view of the code to understand its organization"
+
+### code_review
+
+**Use this tool when you need to:**
+- Perform a comprehensive code quality assessment
+- Identify specific security vulnerabilities, performance bottlenecks, or code quality issues
+- Get actionable recommendations for improving code
+- Conduct a detailed review with severity ratings for issues
+- Evaluate a codebase against best practices
+
+**Example situations:**
+- "Review this codebase for security vulnerabilities"
+- "Analyze the performance of these specific JavaScript files"
+- "Give me a detailed code quality assessment of this repository"
+- "Review my code and tell me how to improve its maintainability"
+
+**When to use parameters:**
+- `specificFiles`: When you only want to review certain files, not the entire repository
+- `fileTypes`: When you want to focus on specific file extensions (e.g., .js, .ts)
+- `detailLevel`: Use 'basic' for a quick overview or 'detailed' for in-depth analysis
+- `focusAreas`: When you want to prioritize certain aspects (security, performance, etc.)
+
 ### Using the CLI Tool
 
 For testing purposes, you can use the included CLI tool:

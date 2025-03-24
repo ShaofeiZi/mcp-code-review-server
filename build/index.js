@@ -26,12 +26,14 @@ const server = new McpServer({
     version: '0.1.0',
     description: 'A custom MCP server to perform code reviews'
 });
-// Register the analyze_repo tool
-server.tool('analyze_repo', {
+// Define analyze_repo parameter schema
+const analyzeRepoParams = {
     repoPath: z.string().describe('Path to the repository to analyze'),
     specificFiles: z.array(z.string()).optional().describe('Specific files to analyze'),
     fileTypes: z.array(z.string()).optional().describe('File types to include in the analysis')
-}, async (params) => {
+};
+// Register the analyze_repo tool with description
+server.tool('analyze_repo', 'Use this tool when you need to analyze a code repository structure without performing a detailed review. This tool flattens the repository into a textual representation and is ideal for getting a high-level overview of code organization, directory structure, and file contents. Use it before code_review when you need to understand the codebase structure first, or when a full code review is not needed.', analyzeRepoParams, async (params) => {
     const options = {
         includePaths: params.specificFiles,
         fileTypes: params.fileTypes,
@@ -40,14 +42,16 @@ server.tool('analyze_repo', {
     const result = await executeRepomix(options);
     return { content: [{ type: 'text', text: `Analyzing repository: ${result}` }] };
 });
-// Register the code_review tool
-server.tool('code_review', {
+// Define code_review parameter schema
+const codeReviewParams = {
     repoPath: z.string().describe('Path to the repository to analyze'),
     specificFiles: z.array(z.string()).optional().describe('Specific files to review'),
     fileTypes: z.array(z.string()).optional().describe('File types to include in the review'),
     detailLevel: z.enum(['basic', 'detailed']).optional().describe('Level of detail for the code review'),
     focusAreas: z.array(z.enum(['security', 'performance', 'quality', 'maintainability'])).optional().describe('Areas to focus on during the code review')
-}, async (params) => {
+};
+// Register the code_review tool with description
+server.tool('code_review', 'Use this tool when you need a comprehensive code review with specific feedback on code quality, security issues, performance problems, and maintainability concerns. This tool performs in-depth analysis on a repository or specific files and returns structured results including issues found, their severity, recommendations for fixes, and overall strengths of the codebase. Use it when you need actionable insights to improve code quality or when evaluating a codebase for potential problems.', codeReviewParams, async (params) => {
     try {
         // Execute Repomix to get the flattened codebase
         const repomixOptions = {

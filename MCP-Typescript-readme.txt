@@ -9,6 +9,7 @@ Server
 Resources
 Tools
 Prompts
+When to Use MCP Tools
 Running Your Server
 stdio
 HTTP with SSE
@@ -152,7 +153,68 @@ server.prompt(
     }]
   })
 );
-Running Your Server
+
+## When to Use MCP Tools
+
+MCP tools should be used when you need to provide LLMs with structured access to external data, functionality, or context. Here are specific scenarios when MCP tools are the right choice:
+
+### When to Use MCP Resources
+
+Use resources when you need to:
+- Provide data from external systems (databases, files, APIs)
+- Give LLMs access to structured information
+- Allow LLMs to browse hierarchical data
+- Supply reference information that doesn't change frequently
+- Load content that's too large for the prompt context
+
+Example use cases:
+- Documentation lookup
+- Database schema access
+- Configuration settings
+- User profile information
+- Content retrieval (articles, code, etc.)
+
+### When to Use MCP Tools
+
+Use tools when you need to:
+- Enable LLMs to perform actions with side effects
+- Allow computation or processing that happens at runtime
+- Interact with external systems
+- Support complex operations that return structured results
+- Enable operations that might fail and require error handling
+
+Example use cases:
+- Database queries or updates
+- API calls to external services
+- Code execution or evaluation
+- Image or data processing
+- Search functionality
+- Authentication operations
+
+### When to Use MCP Prompts
+
+Use prompts when you need to:
+- Define reusable interaction patterns
+- Enforce a specific conversation structure
+- Provide consistent instructions across different LLM requests
+- Package complex workflows into simple templates
+- Guide LLMs to use resources and tools in specific ways
+
+Example use cases:
+- Task-specific workflows
+- Standardized evaluation processes
+- Complex multi-step interactions
+- Domain-specific specialized prompting
+
+### When NOT to Use MCP
+
+MCP might not be necessary when:
+- Your LLM task is simple and doesn't require external data or computation
+- All needed context fits within the prompt limit
+- You're building a standalone application without integration needs
+- You need extremely low-latency responses (MCP adds some overhead)
+
+## Running Your Server
 MCP servers in TypeScript need to be connected to a transport to communicate with clients. How you start the server depends on the choice of transport:
 
 stdio
