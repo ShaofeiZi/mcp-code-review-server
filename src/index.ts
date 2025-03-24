@@ -122,7 +122,24 @@ server.tool(
 
 // Start the server
 const transport = new StdioServerTransport();
-server.connect(transport).catch(error => {
-  console.error('Failed to start server:', error);
-  process.exit(1);
+
+// Connect to the transport and handle errors
+server.connect(transport)
+  .then(() => {
+    console.log('Server started successfully!');
+  })
+  .catch(error => {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  });
+
+// Add a global error handler to prevent crashes
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught exception:', error);
+  // Don't exit the process to keep the server running
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled rejection at:', promise, 'reason:', reason);
+  // Don't exit the process to keep the server running
 });

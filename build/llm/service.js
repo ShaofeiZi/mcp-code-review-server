@@ -4,6 +4,7 @@
  *
  * Service for interacting with LLMs using direct API calls
  */
+import fetch from 'node-fetch';
 /**
  * Service for interacting with LLMs via direct API calls
  */
@@ -25,8 +26,6 @@ export class LLMService {
     async generateReview(prompt) {
         try {
             console.log('Sending code review request to LLM...');
-            // Import dynamically to avoid startup issues
-            const { default: fetch } = await import('node-fetch');
             // Ensure API key exists
             if (!this.config.apiKey) {
                 throw new Error(`API key not provided for ${this.config.provider}`);
@@ -75,38 +74,44 @@ export class LLMService {
                     throw new Error(`Unsupported LLM provider: ${this.config.provider}`);
             }
             // Make the API request
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                headers,
-                body: JSON.stringify(requestBody)
-            });
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`LLM API request failed: ${response.status} ${response.statusText} - ${errorText}`);
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify(requestBody)
+                });
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`LLM API request failed: ${response.status} ${response.statusText} - ${errorText}`);
+                }
+                // Parse the response JSON with appropriate type
+                let responseText;
+                switch (this.config.provider) {
+                    case 'OPEN_AI': {
+                        const data = await response.json();
+                        responseText = data.choices[0].message.content;
+                        break;
+                    }
+                    case 'ANTHROPIC': {
+                        const data = await response.json();
+                        responseText = data.content[0].text;
+                        break;
+                    }
+                    case 'GEMINI': {
+                        const data = await response.json();
+                        responseText = data.candidates[0].content.parts[0].text;
+                        break;
+                    }
+                    default:
+                        throw new Error(`Unsupported LLM provider: ${this.config.provider}`);
+                }
+                // Parse the result
+                return this.parseReviewResponse(responseText);
             }
-            // Parse the response JSON with appropriate type
-            let responseText;
-            switch (this.config.provider) {
-                case 'OPEN_AI': {
-                    const data = await response.json();
-                    responseText = data.choices[0].message.content;
-                    break;
-                }
-                case 'ANTHROPIC': {
-                    const data = await response.json();
-                    responseText = data.content[0].text;
-                    break;
-                }
-                case 'GEMINI': {
-                    const data = await response.json();
-                    responseText = data.candidates[0].content.parts[0].text;
-                    break;
-                }
-                default:
-                    throw new Error(`Unsupported LLM provider: ${this.config.provider}`);
+            catch (error) {
+                console.error('Fetch error:', error);
+                throw new Error(`API request failed: ${error.message}`);
             }
-            // Parse the result
-            return this.parseReviewResponse(responseText);
         }
         catch (error) {
             console.error('LLM request failed:', error);

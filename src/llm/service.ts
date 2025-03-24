@@ -6,6 +6,7 @@
  */
 
 import { LLMConfig, CodeReviewOptions, CodeReviewResult } from './types.js';
+import fetch from 'node-fetch';
 
 // Response types for different LLM providers
 interface OpenAIResponse {
@@ -55,9 +56,6 @@ export class LLMService {
   async generateReview(prompt: string): Promise<CodeReviewResult> {
     try {
       console.log('Sending code review request to LLM...');
-      
-      // Import dynamically to avoid startup issues
-      const { default: fetch } = await import('node-fetch');
       
       // Ensure API key exists
       if (!this.config.apiKey) {
@@ -113,45 +111,50 @@ export class LLMService {
       }
       
       // Make the API request
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(requestBody)
-      });
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`LLM API request failed: ${response.status} ${response.statusText} - ${errorText}`);
+      try {
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(requestBody)
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`LLM API request failed: ${response.status} ${response.statusText} - ${errorText}`);
+        }
+        
+        // Parse the response JSON with appropriate type
+        let responseText: string;
+        
+        switch (this.config.provider) {
+          case 'OPEN_AI': {
+            const data = await response.json() as OpenAIResponse;
+            responseText = data.choices[0].message.content;
+            break;
+          }
+          
+          case 'ANTHROPIC': {
+            const data = await response.json() as AnthropicResponse;
+            responseText = data.content[0].text;
+            break;
+          }
+          
+          case 'GEMINI': {
+            const data = await response.json() as GeminiResponse;
+            responseText = data.candidates[0].content.parts[0].text;
+            break;
+          }
+          
+          default:
+            throw new Error(`Unsupported LLM provider: ${this.config.provider}`);
+        }
+        
+        // Parse the result
+        return this.parseReviewResponse(responseText);
+      } catch (error) {
+        console.error('Fetch error:', error);
+        throw new Error(`API request failed: ${(error as Error).message}`);
       }
-      
-      // Parse the response JSON with appropriate type
-      let responseText: string;
-      
-      switch (this.config.provider) {
-        case 'OPEN_AI': {
-          const data = await response.json() as OpenAIResponse;
-          responseText = data.choices[0].message.content;
-          break;
-        }
-        
-        case 'ANTHROPIC': {
-          const data = await response.json() as AnthropicResponse;
-          responseText = data.content[0].text;
-          break;
-        }
-        
-        case 'GEMINI': {
-          const data = await response.json() as GeminiResponse;
-          responseText = data.candidates[0].content.parts[0].text;
-          break;
-        }
-        
-        default:
-          throw new Error(`Unsupported LLM provider: ${this.config.provider}`);
-      }
-      
-      // Parse the result
-      return this.parseReviewResponse(responseText);
     } catch (error) {
       console.error('LLM request failed:', error);
       throw new Error(`Failed to generate review: ${(error as Error).message}`);
