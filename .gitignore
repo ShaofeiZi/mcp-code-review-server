@@ -3,3 +3,7 @@ node_modules
 build/
 dist/
 bun.lockb
+node_modules/
+build/
+*.log
+.env*
