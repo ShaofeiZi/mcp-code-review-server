@@ -81,13 +81,15 @@ Your response must be valid JSON with the following structure:
   "recommendations": ["Overall recommendations for improving the code"]
 }
 
-IMPORTANT:
+IMPORTANT INSTRUCTIONS:
 - Be specific in your analysis
 - Provide concrete examples when possible
 - Include specific line numbers for issues when applicable
 - Ensure recommendations are clear and actionable
 - Maintain a balanced perspective, highlighting both issues and strengths
-- Your response MUST be valid JSON
+- YOUR RESPONSE MUST BE VALID JSON WITHOUT ANY MARKDOWN FORMATTING
+- DO NOT WRAP YOUR RESPONSE IN CODE BLOCKS OR ANY OTHER FORMATTING
+- RETURN ONLY THE RAW JSON OBJECT
 
 CODE TO REVIEW:
 ${code}

@@ -120,8 +120,16 @@ export class LLMService {
      */
     parseReviewResponse(responseText) {
         try {
+            // Clean the response text - remove markdown code blocks if present
+            let cleanedResponse = responseText.trim();
+            // Handle responses wrapped in markdown code blocks
+            const jsonPattern = /```(?:json)?\s*([\s\S]*?)```/;
+            const match = cleanedResponse.match(jsonPattern);
+            if (match && match[1]) {
+                cleanedResponse = match[1].trim();
+            }
             // Parse the JSON response
-            const parsedResponse = JSON.parse(responseText);
+            const parsedResponse = JSON.parse(cleanedResponse);
             // Validate the response structure
             if (!parsedResponse.summary ||
                 !Array.isArray(parsedResponse.issues) ||
@@ -132,6 +140,8 @@ export class LLMService {
             return parsedResponse;
         }
         catch (error) {
+            console.error('Failed to parse LLM response:', error);
+            console.error('Response text:', responseText);
             throw new Error(`Failed to parse LLM response: ${error.message}`);
         }
     }
