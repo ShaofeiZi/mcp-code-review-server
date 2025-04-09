@@ -1,8 +1,9 @@
 /**
- * @file Code Processor
+ * @file Code Processor 代码处理器
  * @version 0.1.0
  * 
  * Processes code for review
+ * 处理代码以供审查
  */
 
 import * as fs from 'fs';
@@ -10,32 +11,39 @@ import * as path from 'path';
 
 /**
  * Represents a processed file from Repomix output
+ * 表示从Repomix输出处理的文件
  */
 export interface ProcessedFile {
   /**
    * The path to the file
+   * 文件路径
    */
   path: string;
   
   /**
    * The content of the file
+   * 文件内容
    */
   content: string;
 }
 
 /**
  * Processes code for LLM review
+ * 处理代码以供LLM审查
  */
 export class CodeProcessor {
   /**
    * Maximum characters per chunk to send to LLM
+   * 发送给LLM的每个代码块的最大字符数
    */
   private readonly MAX_CHARS_PER_CHUNK = 100000;
   
   /**
    * Processes Repomix output for review
-   * @param repomixOutput Repomix output or path to output file
-   * @returns Processed code
+   * 处理Repomix输出以供审查
+   * 
+   * @param repomixOutput Repomix output or path to output file - Repomix输出或输出文件路径
+   * @returns Processed code - 处理后的代码
    */
   async processRepomixOutput(repomixOutput: string): Promise<string> {
     try {
@@ -69,8 +77,10 @@ export class CodeProcessor {
   
   /**
    * Splits large codebases into manageable chunks
-   * @param code Code to chunk
-   * @returns Array of code chunks
+   * 将大型代码库分割成可管理的块
+   * 
+   * @param code Code to chunk - 需要分块的代码
+   * @returns Array of code chunks - 代码块数组
    */
   chunkLargeCodebase(code: string): string[] {
     if (!code || code.length <= this.MAX_CHARS_PER_CHUNK) {
@@ -111,8 +121,10 @@ export class CodeProcessor {
   
   /**
    * Formats Repomix output for LLM consumption
-   * @param repomixOutput Repomix output to format
-   * @returns Formatted output
+   * 格式化Repomix输出以供LLM使用
+   * 
+   * @param repomixOutput Repomix output to format - 需要格式化的Repomix输出
+   * @returns Formatted output - 格式化后的输出
    */
   private formatRepomixOutput(repomixOutput: string): string {
     // Extract the most relevant parts of the Repomix output
@@ -153,4 +165,4 @@ export class CodeProcessor {
     
     return result.join('\n');
   }
-} 
+}

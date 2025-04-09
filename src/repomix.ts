@@ -1,19 +1,20 @@
 /**
- * @file Repomix Integration
+ * @file Repomix Integration Repomix集成
  * @version 0.1.0
- * @status STABLE - DO NOT MODIFY WITHOUT TESTS
+ * @status STABLE - DO NOT MODIFY WITHOUT TESTS 稳定版 - 修改必须包含测试
  * @lastModified 2024-03-23
  * 
  * Provides integration with Repomix for code analysis
+ * 提供与Repomix的集成用于代码分析
  * 
- * IMPORTANT:
- * - All changes must be accompanied by tests
- * - Maintain type safety
+ * IMPORTANT 重要提示:
+ * - All changes must be accompanied by tests 所有更改必须附带测试
+ * - Maintain type safety 保持类型安全
  * 
- * Functionality:
- * - Execute Repomix analysis
- * - Configure analysis options
- * - Process analysis results
+ * Functionality 功能:
+ * - Execute Repomix analysis 执行Repomix分析
+ * - Configure analysis options 配置分析选项
+ * - Process analysis results 处理分析结果
  */
 
 import { exec } from 'child_process';
@@ -23,6 +24,7 @@ import * as util from 'util';
 
 /**
  * Options for executing Repomix
+ * Repomix执行选项
  */
 export interface RepomixOptions {
   includePaths?: string[];
@@ -36,6 +38,7 @@ export interface RepomixOptions {
 
 /**
  * Result of a code review performed by an LLM
+ * 由大语言模型执行的代码审查结果
  */
 export interface CodeReviewResult {
   overview: string;
@@ -52,8 +55,10 @@ export interface CodeReviewResult {
 
 /**
  * Executes Repomix analysis with the given options
- * @param options Configuration options for the analysis
- * @returns Promise resolving to the analysis results
+ * 使用给定选项执行Repomix分析
+ * 
+ * @param options Configuration options for the analysis - 分析的配置选项
+ * @returns Promise resolving to the analysis results - 解析为分析结果的Promise
  */
 export async function executeRepomix(options: RepomixOptions = {}): Promise<string> {
   console.log('Analyzing repository at', options, 'with Repomix...');
@@ -106,12 +111,14 @@ export async function executeRepomix(options: RepomixOptions = {}): Promise<stri
 
 /**
  * Send the Repomix output to an LLM for code review
+ * 将Repomix输出发送给LLM进行代码审查
  * This is a placeholder implementation that will be completed later
+ * 这是一个占位实现，将在后续完成
  * 
- * @param repomixOutputPath Path to the Repomix output file
- * @param systemPrompt The system prompt for the LLM
- * @param userPrompt The user prompt for the LLM
- * @returns A promise that resolves to the code review result
+ * @param repomixOutputPath Path to the Repomix output file - Repomix输出文件的路径
+ * @param systemPrompt The system prompt for the LLM - 给LLM的系统提示
+ * @param userPrompt The user prompt for the LLM - 给LLM的用户提示
+ * @returns A promise that resolves to the code review result - 解析为代码审查结果的Promise
  */
 export async function sendToLLM(
   repomixOutputPath: string, 
@@ -145,6 +152,7 @@ export async function sendToLLM(
 
 /**
  * Default system prompt for code review
+ * 代码审查的默认系统提示
  */
 export const DEFAULT_SYSTEM_PROMPT = `
 You are an expert code reviewer with extensive experience in software architecture, performance optimization, security, and best practices. Analyze the provided codebase and provide a comprehensive review that includes:
@@ -162,6 +170,7 @@ Format your response as a detailed report with clear sections and actionable fee
 
 /**
  * Default user prompt for code review
+ * 代码审查的默认用户提示
  */
 export const DEFAULT_USER_PROMPT = `
 Please review the code provided and give detailed feedback.
@@ -169,12 +178,13 @@ Please review the code provided and give detailed feedback.
 
 /**
  * Analyzes a repository using Repomix and returns a code review
+ * 使用Repomix分析代码仓库并返回代码审查结果
  * 
- * @param repoPath Path to the repository to analyze
- * @param options Options for Repomix execution
- * @param systemPrompt Custom system prompt for the LLM
- * @param userPrompt Custom user prompt for the LLM
- * @returns A promise that resolves to the code review result
+ * @param repoPath Path to the repository to analyze - 要分析的代码仓库路径
+ * @param options Options for Repomix execution - Repomix执行选项
+ * @param systemPrompt Custom system prompt for the LLM - 自定义的LLM系统提示
+ * @param userPrompt Custom user prompt for the LLM - 自定义的LLM用户提示
+ * @returns A promise that resolves to the code review result - 解析为代码审查结果的Promise
  */
 export async function analyzeRepo(
   repoPath: string,
@@ -193,4 +203,4 @@ export async function analyzeRepo(
   );
   
   return result;
-} 
+}

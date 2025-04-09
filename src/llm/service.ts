@@ -1,14 +1,16 @@
 /**
- * @file LLM Service
+ * @file LLM Service 大语言模型服务
  * @version 0.1.0
  * 
  * Service for interacting with LLMs using direct API calls
+ * 通过直接API调用与大语言模型交互的服务
  */
 
 import { LLMConfig, CodeReviewOptions, CodeReviewResult } from './types.js';
 import fetch from 'node-fetch';
 
 // Response types for different LLM providers
+// 不同LLM提供商的响应类型
 interface OpenAIResponse {
   choices: Array<{
     message: {
@@ -35,13 +37,16 @@ interface GeminiResponse {
 
 /**
  * Service for interacting with LLMs via direct API calls
+ * 通过直接API调用与大语言模型交互的服务类
  */
 export class LLMService {
   private config: LLMConfig;
   
   /**
    * Creates a new LLMService
-   * @param config LLM configuration
+   * 创建新的LLM服务实例
+   * 
+   * @param config LLM configuration - LLM配置信息
    */
   constructor(config: LLMConfig) {
     this.config = config;
@@ -50,8 +55,10 @@ export class LLMService {
   
   /**
    * Generates a review using the LLM
-   * @param prompt Prompt to send to the LLM
-   * @returns Generated review
+   * 使用LLM生成代码审查
+   * 
+   * @param prompt Prompt to send to the LLM - 发送给LLM的提示文本
+   * @returns Generated review - 生成的审查结果
    */
   async generateReview(prompt: string): Promise<CodeReviewResult> {
     try {
@@ -163,8 +170,10 @@ export class LLMService {
   
   /**
    * Parses the LLM response into a structured format
-   * @param responseText LLM response text
-   * @returns Parsed review result
+   * 将LLM响应解析为结构化格式
+   * 
+   * @param responseText LLM response text - LLM响应文本
+   * @returns Parsed review result - 解析后的审查结果
    */
   private parseReviewResponse(responseText: string): CodeReviewResult {
     try {
@@ -197,4 +206,4 @@ export class LLMService {
       throw new Error(`Failed to parse LLM response: ${(error as Error).message}`);
     }
   }
-} 
+}

@@ -1,8 +1,9 @@
 /**
- * @file Code Review Service
+ * @file Code Review Service 代码审查服务
  * @version 0.1.0
  * 
  * Service for performing code reviews using LLMs
+ * 使用大语言模型(LLMs)执行代码审查的服务
  */
 
 import * as fs from 'fs';
@@ -14,6 +15,7 @@ import { callWithRetry } from './errors.js';
 
 /**
  * Service for performing code reviews
+ * 执行代码审查的服务类
  */
 export class CodeReviewService {
   private llmService: LLMService;
@@ -22,7 +24,9 @@ export class CodeReviewService {
   
   /**
    * Creates a new CodeReviewService
-   * @param config LLM configuration
+   * 创建新的代码审查服务实例
+   * 
+   * @param config LLM configuration - LLM配置信息
    */
   constructor(config: LLMConfig) {
     this.llmService = new LLMService(config);
@@ -32,9 +36,11 @@ export class CodeReviewService {
   
   /**
    * Reviews code from a file
-   * @param filePath Path to the file to review
-   * @param options Code review options
-   * @returns Code review result
+   * 从文件中审查代码
+   * 
+   * @param filePath Path to the file to review - 要审查的文件路径
+   * @param options Code review options - 代码审查选项
+   * @returns Code review result - 代码审查结果
    */
   async reviewCodeFromFile(filePath: string, options: CodeReviewOptions): Promise<CodeReviewResult> {
     console.log(`Reviewing code from file: ${filePath}`);
@@ -44,9 +50,11 @@ export class CodeReviewService {
   
   /**
    * Reviews code from repomix output
-   * @param repomixOutput Repomix output or path to Repomix output file
-   * @param options Code review options
-   * @returns Code review result
+   * 从Repomix输出中审查代码
+   * 
+   * @param repomixOutput Repomix output or path to Repomix output file - Repomix输出内容或输出文件路径
+   * @param options Code review options - 代码审查选项
+   * @returns Code review result - 代码审查结果
    */
   async reviewCodeFromRepomix(repomixOutput: string, options: CodeReviewOptions): Promise<CodeReviewResult> {
     console.log('Processing Repomix output...');
@@ -57,9 +65,11 @@ export class CodeReviewService {
   
   /**
    * Reviews code
-   * @param code Code to review
-   * @param options Code review options
-   * @returns Code review result
+   * 审查代码
+   * 
+   * @param code Code to review - 要审查的代码
+   * @param options Code review options - 代码审查选项
+   * @returns Code review result - 代码审查结果
    */
   private async reviewCode(code: string, options: CodeReviewOptions): Promise<CodeReviewResult> {
     try {
@@ -81,4 +91,4 @@ export class CodeReviewService {
       throw new Error(`Failed to review code: ${(error as Error).message}`);
     }
   }
-} 
+}

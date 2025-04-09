@@ -1,8 +1,9 @@
 /**
- * @file LLM Configuration
+ * @file LLM Configuration 大语言模型配置
  * @version 0.1.0
  * 
  * Configuration for LLM providers
+ * 大语言模型提供商的配置管理
  */
 
 import * as dotenv from 'dotenv';
@@ -13,6 +14,7 @@ dotenv.config();
 
 /**
  * API key environment variable names for each provider
+ * 各提供商的API密钥环境变量名
  */
 const apiKeyEnvVars: Record<LLMProvider, string> = {
   OPEN_AI: 'OPENAI_API_KEY',
@@ -22,6 +24,7 @@ const apiKeyEnvVars: Record<LLMProvider, string> = {
 
 /**
  * Default models for each provider
+ * 各提供商的默认模型
  */
 const defaultModels: Record<LLMProvider, string> = {
   OPEN_AI: 'gpt-4o',
@@ -31,6 +34,7 @@ const defaultModels: Record<LLMProvider, string> = {
 
 /**
  * Model environment variable names for each provider
+ * 各提供商的模型环境变量名
  */
 const modelEnvVars: Record<LLMProvider, string> = {
   OPEN_AI: 'OPENAI_MODEL',
@@ -40,7 +44,9 @@ const modelEnvVars: Record<LLMProvider, string> = {
 
 /**
  * Loads LLM configuration from environment variables
- * @returns LLM configuration
+ * 从环境变量加载LLM配置
+ * 
+ * @returns LLM configuration - LLM配置信息
  */
 export function loadLLMConfig(): LLMConfig {
   // Get the provider
@@ -71,4 +77,4 @@ export function loadLLMConfig(): LLMConfig {
     model,
     apiKey
   };
-} 
+}

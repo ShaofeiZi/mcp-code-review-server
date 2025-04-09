@@ -1,26 +1,31 @@
 /**
- * @file Code Review Prompt Builder
+ * @file Code Review Prompt Builder 代码审查提示构建器
  * @version 0.1.0
  * 
  * Builds prompts for code review
+ * 构建代码审查的提示文本
  */
 
 import { CodeReviewOptions } from './types.js';
 
 /**
  * Builds prompts for code review
+ * 构建代码审查的提示文本的类
  */
 export class CodeReviewPromptBuilder {
   /**
    * Creates a code review prompt builder
+   * 创建代码审查提示构建器
    */
   constructor() {}
   
   /**
    * Builds a code review prompt
-   * @param code Code to review
-   * @param options Code review options
-   * @returns Prompt text
+   * 构建代码审查提示文本
+   * 
+   * @param code Code to review - 要审查的代码
+   * @param options Code review options - 代码审查选项
+   * @returns Prompt text - 提示文本
    */
   buildCodeReviewPrompt(code: string, options: CodeReviewOptions): string {
     const focusAreasText = options.focusAreas
@@ -95,4 +100,4 @@ CODE TO REVIEW:
 ${code}
 `;
   }
-} 
+}

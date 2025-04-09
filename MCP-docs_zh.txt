@@ -1,0 +1,108 @@
+# 示例客户端
+来源：https://modelcontextprotocol.io/clients
+
+支持MCP集成的应用程序列表
+
+本页面概述了支持Model Context Protocol (MCP)的应用程序。每个客户端可能支持不同的MCP功能，允许与MCP服务器进行不同级别的集成。
+
+## 功能支持矩阵
+
+| 客户端                               | [资源] | [提示] | [工具] | [采样] | 根目录 | 说明                                                              |
+| ------------------------------------ | ------ | ------ | ------ | ------ | ------ | ----------------------------------------------------------------- |
+| [Claude桌面应用][Claude]              | ✅      | ✅      | ✅      | ❌      | ❌      | 完整支持所有MCP功能                                                |
+| [5ire][5ire]                         | ❌      | ❌      | ✅      | ❌      | ❌      | 支持工具                                                           |
+| [BeeAI框架][BeeAI Framework]          | ❌      | ❌      | ✅      | ❌      | ❌      | 在智能工作流中支持工具                                             |
+| [Cline][Cline]                       | ✅      | ❌      | ✅      | ❌      | ❌      | 支持工具和资源                                                     |
+| [Continue][Continue]                 | ✅      | ✅      | ✅      | ❌      | ❌      | 完整支持所有MCP功能                                                |
+| [Cursor][Cursor]                     | ❌      | ❌      | ✅      | ❌      | ❌      | 支持工具                                                           |
+| [Emacs Mcp][Mcp.el]                  | ❌      | ❌      | ✅      | ❌      | ❌      | 在Emacs中支持工具                                                  |
+| [Firebase Genkit][Genkit]            | ⚠️     | ✅      | ✅      | ❌      | ❌      | 通过工具支持资源列表和查找                                         |
+| [GenAIScript][GenAIScript]           | ❌      | ❌      | ✅      | ❌      | ❌      | 支持工具                                                           |
+| [Goose][Goose]                       | ❌      | ❌      | ✅      | ❌      | ❌      | 支持工具                                                           |
+| [LibreChat][LibreChat]               | ❌      | ❌      | ✅      | ❌      | ❌      | 支持智能体工具                                                     |
+| [mcp-agent][mcp-agent]               | ❌      | ❌      | ✅      | ⚠️     | ❌      | 支持工具、服务器连接管理和智能体工作流                             |
+| [oterm][oterm]                       | ❌      | ❌      | ✅      | ❌      | ❌      | 支持工具                                                           |
+| [Roo Code][Roo Code]                 | ✅      | ❌      | ✅      | ❌      | ❌      | 支持工具和资源                                                     |
+| [Sourcegraph Cody][Cody]             | ✅      | ❌      | ❌      | ❌      | ❌      | 通过OpenCTX支持资源                                                |
+| [Superinterface][Superinterface]     | ❌      | ❌      | ✅      | ❌      | ❌      | 支持工具                                                           |
+| [TheiaAI/TheiaIDE][TheiaAI/TheiaIDE] | ❌      | ❌      | ✅      | ❌      | ❌      | 在Theia AI和AI驱动的Theia IDE中支持智能体工具                      |
+| [Windsurf编辑器][Windsurf]            | ❌      | ❌      | ✅      | ❌      | ❌      | 支持AI Flow协作开发中的工具                                         |
+| [Zed][Zed]                           | ❌      | ✅      | ❌      | ❌      | ❌      | 提示以斜杠命令形式出现                                             |
+| [SpinAI][SpinAI]                     | ❌      | ❌      | ✅      | ❌      | ❌      | 支持TypeScript AI智能体的工具                                      |
+| [OpenSumi][OpenSumi]                 | ❌      | ❌      | ✅      | ❌      | ❌      | 在OpenSumi中支持工具                                               |
+| [Daydreams智能体][Daydreams]          | ✅      | ✅      | ✅      | ❌      | ❌      | 支持在Daydreams智能体中使用服务器                                  |
+
+[Claude]: https://claude.ai/download
+[Cursor]: https://cursor.com
+[Zed]: https://zed.dev
+[Cody]: https://sourcegraph.com/cody
+[Genkit]: https://github.com/firebase/genkit
+[Continue]: https://github.com/continuedev/continue
+[GenAIScript]: https://microsoft.github.io/genaiscript/reference/scripts/mcp-tools/
+[Cline]: https://github.com/cline/cline
+[LibreChat]: https://github.com/danny-avila/LibreChat
+[TheiaAI/TheiaIDE]: https://eclipsesource.com/blogs/2024/12/19/theia-ide-and-theia-ai-support-mcp/
+[Superinterface]: https://superinterface.ai
+[5ire]: https://github.com/nanbingxyz/5ire
+[BeeAI Framework]: https://i-am-bee.github.io/beeai-framework
+[mcp-agent]: https://github.com/lastmile-ai/mcp-agent
+[Mcp.el]: https://github.com/lizqwerscott/mcp.el
+[Roo Code]: https://roocode.com
+[Goose]: https://block.github.io/goose/docs/goose-architecture/#interoperability-with-extensions
+[Windsurf]: https://codeium.com/windsurf
+[Daydreams]: https://github.com/daydreamsai/daydreams
+[SpinAI]: https://spinai.dev
+[OpenSumi]: https://github.com/opensumi/core
+[oterm]: https://github.com/ggozad/oterm
+[Resources]: https://modelcontextprotocol.io/docs/concepts/resources
+[Prompts]: https://modelcontextprotocol.io/docs/concepts/prompts
+[Tools]: https://modelcontextprotocol.io/docs/concepts/tools
+[Sampling]: https://modelcontextprotocol.io/docs/concepts/sampling
+
+## 客户端详情
+
+### Claude桌面应用
+
+Claude桌面应用程序提供全面的MCP支持，实现与本地工具和数据源的深度集成。
+
+**主要功能：**
+
+* 完整支持资源，允许附加本地文件和数据
+* 支持提示模板
+* 工具集成，用于执行命令和脚本
+* 本地服务器连接，提供增强的隐私和安全性
+
+> ⓘ 注意：Claude.ai网页应用目前不支持MCP。MCP功能仅在桌面应用程序中可用。
+
+### 5ire
+
+[5ire](https://github.com/nanbingxyz/5ire)是一个开源的跨平台桌面AI助手，支持通过MCP服务器使用工具。
+
+**主要功能：**
+
+* 内置的MCP服务器可以快速启用和禁用
+* 用户可以通过修改配置文件添加更多服务器
+* 开源且用户友好，适合初学者
+* 未来将持续改进对MCP的支持
+
+### BeeAI框架
+
+[BeeAI框架](https://i-am-bee.github.io/beeai-framework)是一个开源框架，用于构建、部署和大规模服务智能工作流。该框架包括**MCP工具**，这是一个原生功能，简化了MCP服务器在智能工作流中的集成。
+
+**主要功能：**
+
+* 无缝将MCP工具整合到智能工作流中
+* 快速从连接的MCP客户端实例化框架原生工具
+* 计划未来支持智能MCP功能
+
+**了解更多：**
+
+* [在智能工作流中使用MCP工具的示例](https://i-am-bee.github.io/beeai-framework/#/typescript/tools?id=using-the-mcptool-class)
+
+### Cline
+
+[Cline](https://github.com/cline/cline)是VS Code中的一个自主编码智能体，可以编辑文件、运行命令、使用浏览器等——每一步都需要你的许可。
+
+**主要功能：**
+
+* 通过自然语言创建和添加工具（例如"添加一个搜索网络的工具
